@@ -1,5 +1,15 @@
 package bz
 
+trait Morphisms[C] {
+  case class `=>`[A <: C, B <: C](a: A, b: B) {
+    def pipe[D <: C](implicit bd: (B `=>` D)): `=>`[A, D] =
+      `=>`(a, bd.b)
+  }
+  def apply[A <: C, B <: C](a: A, b: B): `=>`[A, B] = `=>`(a, b)
+  def pipe[G <: C, H <: C, I <: C](implicit gh: (G `=>` H), hi: (H `=>` I)): (G `=>` I) =
+    `=>`(gh.a, hi.b)
+}
+
 object Main extends App {
 
   sealed trait SC // SourceCategory
@@ -60,4 +70,54 @@ object Main extends App {
   println(nt(C)(Apex(A)))
   println(nt(C)(Apex(B)))
   println(nt(C)(Apex(C)))
+}
+
+object Duals extends App {
+
+  sealed trait Cat
+  case class AA() extends Cat
+  case class A() extends Cat
+  case class B() extends Cat
+  case class FAB() extends Cat
+  case class C() extends Cat
+  case class D() extends Cat
+  case class E() extends Cat
+  case class FF() extends Cat
+  case class G() extends Cat
+
+  val mph = new Morphisms[Cat] {}
+
+  object initialEncoding {
+    implicit val aaa = mph(AA(), A())
+    implicit val afab = mph(A(), FAB())
+    implicit val bfab = mph(B(), FAB())
+    implicit val fabc = mph(FAB(), C())
+    implicit val fabd = mph(FAB(), D())
+    implicit val fabe = mph(FAB(), E())
+    implicit val cff = mph(C(), FF())
+    implicit val dff = mph(D(), FF())
+    implicit val cg = mph(C(), G())
+    implicit val dg = mph(D(), G())
+    implicit val eg = mph(E(), G())
+  }
+
+  object finalEncoding {
+    implicit val aaa = mph(A(), AA())
+    implicit val faba = mph(FAB(), A())
+    implicit val fabb = mph(FAB(), B())
+    implicit val cfab = mph(C(), FAB())
+    implicit val dfab = mph(D(), FAB())
+    implicit val efab = mph(E(), FAB())
+    implicit val ffc = mph(FF(), C())
+    implicit val ffd = mph(FF(), D())
+    implicit val gc = mph(G(), C())
+    implicit val gd = mph(G(), D())
+    implicit val ge = mph(G(), E())
+  }
+
+  {
+    import initialEncoding._
+    println("A => FAB pipe FAB => C = " ++ mph.pipe[A, FAB, C].toString)
+    println("AA => A pipe FAB => C pipe C => FF = " ++ mph.pipe[AA, A, FAB].pipe[C].pipe[FF].toString)
+  }
 }
