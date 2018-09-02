@@ -8,6 +8,7 @@ scalacOptions ++= Seq(
   "-deprecation",         // warn about use of deprecated APIs
   "-unchecked",           // warn about unchecked type parameters
   "-feature",             // warn about misused language features
+  "-Ywarn-unused:imports,privates,locals",
   "-language:higherKinds",// allow higher kinded types without `import scala.language.higherKinds`
   "-Xlint",               // enable handy linter warnings
   "-Xfatal-warnings",     // turn compiler warnings into errors

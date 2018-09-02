@@ -2,8 +2,11 @@ package bz
 
 trait Morphisms[C] {
   case class `=>`[A <: C, B <: C](a: A, b: B) {
-    def pipe[D <: C](implicit bd: (B `=>` D)): `=>`[A, D] =
+    type Ext[N <: C] = (B `=>` N)
+    def pipe[D <: C](implicit bd: Ext[D]): `=>`[A, D] =
       `=>`(a, bd.b)
+    def pipe[D <: C: Ext, E <: C](implicit de: (D `=>` E)): `=>`[A, E] =
+      `=>`(a, de.b)
   }
   def apply[A <: C, B <: C](a: A, b: B): `=>`[A, B] = `=>`(a, b)
   def pipe[G <: C, H <: C, I <: C](implicit gh: (G `=>` H), hi: (H `=>` I)): (G `=>` I) =
@@ -121,6 +124,7 @@ object Duals extends App {
   {
     import initialEncoding._
     println("A => FAB pipe FAB => C = " ++ mph.pipe[A, FAB, C].toString)
-    println("AA => A pipe FAB => C pipe C => FF = " ++ mph.pipe[AA, A, FAB].pipe[C].pipe[FF].toString)
+    println("AA => A pipe A => FAB pipe FAB => C pipe C => FF = " ++
+      mph.pipe[AA, A, FAB].pipe[C, FF].toString)
   }
 }
