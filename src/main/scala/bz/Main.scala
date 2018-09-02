@@ -115,6 +115,9 @@ object Duals extends App {
     implicit val ge = mph(G(), E())
   }
 
+  def endoIF(init: initialEncoding.type): finalEncoding.type = finalEncoding
+  def endoFI(fin: finalEncoding.type): initialEncoding.type = initialEncoding
+
   {
     import initialEncoding._
     println("A => FAB pipe FAB => C = " ++ mph.pipe[A, FAB, C].toString)
