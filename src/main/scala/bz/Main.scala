@@ -1,16 +1,16 @@
 package bz
 
 trait Morphisms[C] {
-  case class `=>`[A <: C, B <: C](a: A, b: B) {
+  case class `=>`[A <: C, B <: C](a: A, body: Seq[C], b: B) {
     type Ext[N <: C] = (B `=>` N)
     def pipe[D <: C](implicit bd: Ext[D]): `=>`[A, D] =
-      `=>`(a, bd.b)
+      `=>`(a, body ++ (bd.a +: bd.body), bd.b)
     def pipe[D <: C: Ext, E <: C](implicit de: (D `=>` E)): `=>`[A, E] =
-      `=>`(a, de.b)
+      `=>`(a, (body :+ b) ++ (de.a +: de.body), de.b)
   }
-  def apply[A <: C, B <: C](a: A, b: B): `=>`[A, B] = `=>`(a, b)
+  def apply[A <: C, B <: C](a: A, b: B): `=>`[A, B] = `=>`(a, Seq(), b)
   def pipe[G <: C, H <: C, I <: C](implicit gh: (G `=>` H), hi: (H `=>` I)): (G `=>` I) =
-    `=>`(gh.a, hi.b)
+    `=>`(gh.a, gh.body ++ (hi.a +: hi.body), hi.b)
 }
 
 object Main extends App {
